@@ -6,16 +6,17 @@ Data flows one way, from Swell to sevdesk, with the merchant's own API token. Th
 
 ## Setup
 
-1. In sevdesk: complete the company and tax settings. Add a clearing account for shop payments under Bank → Verrechnungskonto. Copy the API token of your user under Einstellungen → Benutzer.
-2. In Swell, open Apps → sevdesk → Settings, paste the token, save, and press **Test connection**. It names the sevdesk account, says whether it invoices with VAT, and lists the payment accounts it found.
-3. Under **Payments**, enter the name of the clearing account. See "Payments".
-4. Under **Documents**, choose:
-   - **Create documents as**: drafts or finalized documents. See "Drafts and finalized documents".
+1. Install the app from Apps in the Swell dashboard.
+2. In sevdesk: complete the company and tax settings. Add a clearing account for shop payments under Bank → Verrechnungskonto. Copy the API token of your user under Einstellungen → Benutzer.
+3. In Swell, open Apps → sevdesk → Settings, paste the token under **API token**, save, and press **Test connection**. It fills in **Connected account** with the name of the sevdesk account, and says whether the account invoices with VAT, whether documents are created as drafts or finalized, which sevdesk accounts take bookings, and how the payment settings match them.
+4. Under **Payments**, enter the name of the clearing account, and add a row under **Payment method exceptions** for each method that arrives elsewhere. See "Payments".
+5. Under **Documents**, choose:
+   - **Create documents as**: drafts or finalized documents. New installs create drafts. See "Drafts and finalized documents".
    - **Document language**: German, English, or by country: German for Germany, Austria, Switzerland and Liechtenstein, English elsewhere.
-   - **Sales to other EU countries**: see "Tax".
-   - **Create credit notes for refunds**.
-   - **E-mail finalized documents to customers**.
-5. Turn on **Create documents automatically for paid orders and refunds**.
+   - **Sales to other EU countries**: by the tax rate charged, or always under the One-Stop-Shop. See "Tax".
+   - **Create credit notes for refunds**: on for new installs. Switched off, refunds create nothing.
+   - **E-mail finalized documents to customers, with a link to the PDF**: off for new installs.
+6. Turn on **Create documents automatically for paid orders and refunds**. Until then nothing is created by itself; the buttons work either way.
 
 Settings are separate for the store's test and live environments, and both start empty. The app needs an account on sevdesk's current bookkeeping system ("sevdesk-Update 2.0", which every account opened since mid-2024 has); Test connection says so if yours is not.
 
@@ -32,7 +33,7 @@ Settings are separate for the store's test and live environments, and both start
 
 **The credit note.** A refund in Swell is an amount and names no items. A refund of the whole invoice repeats the invoice's positions. A partial refund becomes one position per tax rate. sevdesk limits the credit notes of an invoice per tax rate, so each refund is split in the proportion of what the invoice still holds at each rate.
 
-**The contact.** The customer is looked for in sevdesk by e-mail address. If there is none, a contact is created with the billing address and the e-mail address. A business with a VAT ID gets a contact of its own that carries the VAT ID, which sevdesk needs for a tax-free invoice. Existing contacts are never changed.
+**The contact.** The customer is looked for in sevdesk by e-mail address, then among the contacts the app used for the same customer before. If there is none, a contact is created with the billing address and the e-mail address. A business with a VAT ID gets a contact of its own that carries the VAT ID, which sevdesk needs for a tax-free invoice. Existing contacts are never changed.
 
 **Orders without a document.** An order in another currency than EUR is skipped. A refund of an order the app did not invoice is ignored. A free order never becomes "paid" in Swell and gets no invoice; use the action if one is wanted.
 
@@ -56,10 +57,11 @@ The app does not decide what tax is due. It takes the tax Swell charged and choo
 | Germany | Umsatzsteuerpflichtige Umsätze: 19, 7 and 0 % |
 | Another EU country, charged German rates | Umsatzsteuerpflichtige Umsätze |
 | Another EU country, charged other rates | One-Stop-Shop: goods, or electronic services when nothing is shipped |
-| Another EU country, no tax, customer has a VAT ID | Innergemeinschaftliche Lieferung, or Reverse Charge when nothing is shipped |
+| Another EU country, no tax, customer has a VAT ID | Innergemeinschaftliche Lieferungen, or Reverse Charge when nothing is shipped |
 | Outside the EU, no tax | Ausfuhren, or "Nicht im Inland steuerbare Leistung" when nothing is shipped |
+| Outside the EU, charged German rates | Umsatzsteuerpflichtige Umsätze |
 
-sevdesk prints the line that says why a document carries no tax, from the rule.
+sevdesk prints the line that says why a document carries no tax, from the rule. A document's page in Swell names its rule in English, for example "Taxable revenue" or "One-Stop-Shop, goods".
 
 **Sales to other EU countries.** By default the rate decides: German rates are booked as German revenue, any other rate under the One-Stop-Shop. If you are registered for the One-Stop-Shop, choose "Always under the One-Stop-Shop", so that a country whose rate equals a German one (Cyprus charges 19 %) is booked correctly too.
 
@@ -69,6 +71,8 @@ An order that fits none of the rules is not sent. It is listed under **Needs att
 - **Rates sevdesk does not accept under the rule**: for example 16 % in Germany. sevdesk decides this and names the rates it allows; the app passes on its answer.
 - **Goods and services to another country on one order**: sevdesk books them under different rules, and a document has only one.
 - **Tax that is not what the rates give**: the store calculates tax before discounts. Tax has to be calculated after discounts (Settings → Taxes in Swell).
+- **Tax on an order of a small-business account**: the sevdesk account invoices without VAT, and the store charged tax.
+- **A rate that is not a German one, to a country outside the EU**: sevdesk has no rule for it.
 
 **To the cent.** sevdesk computes all totals itself, position by position. Swell computes tax per item with four decimals and rounds the order total. The app builds the invoice so that sevdesk's total is the order's: with the store's net prices when that gives the total, otherwise with the same lines as gross amounts. Then it compares the total of sevdesk's draft with the order. A draft with another total is deleted, and nothing gets a number.
 
@@ -86,7 +90,7 @@ Every document starts in sevdesk as a **draft**: it has no number, and can be ed
 
 - **Orders → sevdesk documents** lists every invoice and credit note, with tabs for **Needs attention**, **In sevdesk**, **Drafts** and **Skipped**. A document's page shows the number, the PDF, the status in sevdesk, the tax rule and what was done about the payment, and has **View in sevdesk**.
 - **The order's sevdesk tab** shows the order's documents. **Create sevdesk invoice** is in the order's Actions menu.
-- A document that needs attention has **Retry** and **Mark as resolved**. Resolve it after creating the document in sevdesk by hand, or when none is needed: the app will then not create it.
+- A document that needs attention has **Retry** and **Mark as resolved**. Resolve it after creating the document in sevdesk by hand, or when none is needed: the app will then not create it. A document that exists in sevdesk and could not be finished stays there as it is.
 - **Retry failed documents**, in the Actions menu of the app's settings page, retries everything under Needs attention.
 
 The buttons start a run in the background. The dashboard shows that it started and reloads the page when it has finished, usually after ten to twenty seconds. What came of it is on the document.
@@ -114,13 +118,17 @@ Once the app is switched on, a paid or refunded order needs nothing from you: it
 | sevdesk refuses a document, or no invoice can be built | Listed under Needs attention with the reason. The administrators get one e-mail while such documents wait, not one per order |
 | An order is paid after its invoice was created, and the booking cannot be made at that moment | The invoice's record is marked as waiting for its booking when the payment arrives. Whatever attempt comes next books it: the run's own repeats, the half-hourly run, or a retry |
 | One document of a bulk run cannot be worked on | It keeps the message, and the run goes on with the next document |
-| The payment account's name is wrong | The invoice is finalized and has its PDF; the booking waits under Needs attention. **Retry** books it after the name is corrected |
+| The payment account's name is wrong, or it names an account that is connected to a bank | The invoice is finalized and has its PDF; the booking waits under Needs attention. **Retry** books it after the name is corrected |
 | A draft was deleted in sevdesk, or the token now belongs to another account | The next time the app reads the document it is listed under Needs attention. **Retry** creates it again, **Mark as resolved** leaves it |
+| A refund's invoice is gone from sevdesk, or was marked as resolved | The credit note is listed under Needs attention. Create it in sevdesk by hand, then choose **Mark as resolved** |
 
 E-mails to administrators are sent by the notification "sevdesk needs attention", and the customer's e-mail by "sevdesk document for the customer". Both can be edited or switched off under Settings → Notifications. The administrators' e-mail goes to the store's users who have logged in and have notifications switched on for their user; if nobody has, nobody is told.
 
 ## Limits and known issues
 
+- **EUR only.** Orders in other currencies are skipped and listed under **Skipped**.
+- **sevdesk-Update 2.0 only.** An account on sevdesk's older bookkeeping system is refused, with a message that says so.
+- **No sandbox.** A token always belongs to a real sevdesk account, in the store's test environment too. See "Drafts and finalized documents".
 - **Payments on a connected bank or PayPal account cannot be booked** by the app. sevdesk matches those itself from the imported transactions.
 - **Payment provider fees and payouts** are not booked. The transfer from the clearing account to the bank is yours to book.
 - **Changes to an order after its invoice** (edited or canceled items without a refund) are not followed.
@@ -128,7 +136,7 @@ E-mails to administrators are sent by the notification "sevdesk needs attention"
 - **Goods and items that are not shipped on one order to another country** are not invoiced: see "Tax". The same goes for a gift card sold together with taxed items to another EU country under the One-Stop-Shop, whose rules have no 0 %: sevdesk refuses it, and it is listed with the reason.
 - **Subscription renewals that create no order** are not invoiced. Renewals that create an order are.
 - **E-invoices** (XRechnung, ZUGFeRD) are not created.
-- **More than about sixty paid orders a minute** start more runs than Swell allows an app. The orders above that are picked up a minute later.
+- **More than about sixty paid orders and refunds a minute** start more runs than Swell allows an app. The ones above that are picked up a minute later.
 - **The PDF link is not protected.** The PDF is stored as a file in Swell at an address that cannot be guessed, like other Swell files. Anyone with the link can open it.
 - The customer's e-mail carries a link to the PDF, not an attachment.
 - A contact whose creation was cut short in sevdesk can be left behind without documents.
@@ -158,10 +166,10 @@ One document is eight to ten calls to sevdesk, and takes eight to nine seconds f
 - `sevdesk.ts` is the API client. It marks a write without an answer as uncertain, and never repeats a refused request: sevdesk can block a token after repeated failing requests.
 - `start.ts`, `alerts.ts`, `settings.ts`, `texts.ts`, `dates.ts`, `countries.ts` are small.
 
-Two things about the platform that the code depends on:
+Three things about the platform that the code depends on:
 
 - **A write made in a workflow raises no events** unless it carries `$events: true`. The two e-mails are sent by events, so the write that marks a document for the customer's e-mail (`documents.ts`) and the one that creates an alert (`alerts.ts`) ask for them.
-- **A workflow write has to name its notification.** With `$events: true` alone the event is raised every time, but the store created the e-mail for only about three in four such writes (measured on 2026-10-13: 15 of 21, and 0 of 2 alerts; 12 of 12 for the same change made by a plain store request). The two writes therefore carry `$notify` with the notification's name and the suffix `.v2` (`document-ready.v2`, `alert.v2`): 11 of 11 and the alert since. The platform was corrected for this on 2026-10-13: a workflow write now sends the store's notifications as a write from a function does. With the correction the key changes nothing, so it can stay, or go in a later version.
+- **A workflow write names its notification.** With `$events: true` alone the event was raised every time, but the store did not send the e-mail for every such write. The two writes therefore also carry `$notify` with the notification's name and the suffix `.v2` (`document-ready.v2`, `alert.v2`), which sent every e-mail in the runs made with it. Where the platform sends the notifications of workflow writes by itself, the key changes nothing.
 - `models/orders.json` and `content/orders.json` name the documents collection by its short name, `documents`. The platform turns a short name into the app's own collection when the app is installed. Do not write `apps/sevdesk/documents` there: that form is stored as written, the dashboard cannot resolve it, and the order page fails to open.
 
 ## Development
@@ -183,7 +191,7 @@ After a change in `functions/lib/` only, push with `--force`: push skips functio
 | --- | --- |
 | Full description | `DESCRIPTION.md` |
 | Short description | `description` in `swell.json` (up to 70 characters) |
-| Icon | `assets/icon.png` |
+| Icon | `assets/icon.png` (600 × 600, the square filled: the dashboard rounds the corners itself) |
 | Screenshots | `assets/images/*.png` (3200 × 1800), listed in `images` in `swell.json` |
 | Social card | `assets/image.png` (1200 × 630) |
 
