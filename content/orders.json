@@ -1,0 +1,152 @@
+{
+  "collection": "orders",
+  "fields": [
+    {
+      "id": "documents",
+      "type": "collection",
+      "label": "sevdesk documents",
+      "link": {
+        "params": {
+          "order_id": "id"
+        }
+      },
+      "collection": "documents",
+      "fields": [
+        {
+          "id": "type",
+          "label": "Type",
+          "type": "select",
+          "readonly": true,
+          "options": [
+            {
+              "value": "invoice",
+              "label": "Invoice"
+            },
+            {
+              "value": "credit_note",
+              "label": "Credit note"
+            }
+          ]
+        },
+        {
+          "id": "number",
+          "label": "Number",
+          "type": "short_text",
+          "readonly": true
+        },
+        {
+          "id": "amount",
+          "label": "Total (EUR)",
+          "type": "number",
+          "digits": 2,
+          "readonly": true
+        },
+        {
+          "id": "status",
+          "label": "Status",
+          "type": "select",
+          "readonly": true,
+          "options": [
+            {
+              "value": "created",
+              "label": "In sevdesk"
+            },
+            {
+              "value": "pending",
+              "label": "In progress"
+            },
+            {
+              "value": "failed",
+              "label": "Needs attention"
+            },
+            {
+              "value": "skipped",
+              "label": "Skipped"
+            },
+            {
+              "value": "resolved",
+              "label": "Resolved by hand"
+            }
+          ]
+        },
+        {
+          "id": "sevdesk_status",
+          "label": "Status in sevdesk",
+          "type": "select",
+          "readonly": true,
+          "options": [
+            {
+              "value": "draft",
+              "label": "Draft"
+            },
+            {
+              "value": "open",
+              "label": "Open"
+            },
+            {
+              "value": "partly_paid",
+              "label": "Partly paid"
+            },
+            {
+              "value": "paid",
+              "label": "Paid"
+            }
+          ]
+        },
+        {
+          "id": "problem",
+          "label": "Problem",
+          "type": "long_text",
+          "readonly": true
+        }
+      ]
+    }
+  ],
+  "views": [
+    {
+      "id": "list",
+      "bulk_actions": [
+        {
+          "id": "invoice-selected",
+          "label": "Create sevdesk invoices",
+          "function": "process-documents",
+          "loading_label": "Starting…",
+          "modal": {
+            "title": "Create sevdesk invoices",
+            "description": "Creates an invoice in sevdesk for each selected order that has none yet, paid or not. An order that already has one gets no second one; a payment that came after its invoice is booked on it. Orders in other currencies than EUR are skipped. The results appear under Orders → sevdesk documents.",
+            "submit_label": "Create invoices"
+          }
+        }
+      ],
+      "fields": []
+    },
+    {
+      "id": "edit",
+      "extra_actions": [
+        {
+          "id": "create-invoice",
+          "label": "Create sevdesk invoice",
+          "function": "process-documents",
+          "loading_label": "Creating invoice…",
+          "hint": "Creates the invoice for this order in sevdesk now. If it has one, books a payment that came after it",
+          "modal": {
+            "title": "Create sevdesk invoice",
+            "description": "Creates the invoice for this order in sevdesk now, whether or not the order is paid. If the order already has one, no second one is created; a payment that came after the invoice is booked on it.",
+            "submit_label": "Create invoice"
+          }
+        }
+      ],
+      "tabs": [
+        {
+          "id": "sevdesk",
+          "label": "sevdesk",
+          "fields": [
+            {
+              "id": "documents"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

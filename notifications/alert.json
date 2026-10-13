@@ -1,0 +1,18 @@
+{
+  "collection": "alerts",
+  "label": "sevdesk needs attention",
+  "description": "Tells the store's administrators that sevdesk refuses the connection, or that invoices or credit notes could not be created. One e-mail per incident, not one per order.",
+  "method": "email",
+  "admin": true,
+  "event": "created",
+  "new": true,
+  "subject": "Action needed: {% if key == 'connection' %}sevdesk is not accepting documents from {{ store.name }}{% else %}a sevdesk document for {{ store.name }} could not be created{% endif %}",
+  "sample": {
+    "key": "documents",
+    "message": "sevdesk refused the document: The given tax rate (16) is not allowed. Allowed values are: 0.0, 7.0, 19.0.",
+    "subject": "Invoice for order 1042",
+    "count": 1,
+    "date_last_seen": "2026-10-10T12:00:00.000Z",
+    "app_id": "000000000000000000000000"
+  }
+}

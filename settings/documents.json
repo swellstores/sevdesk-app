@@ -1,0 +1,77 @@
+{
+  "label": "Documents",
+  "description": "How invoices and credit notes are created. A finalized document gets its number, its payment booking and its PDF at once, and cannot be changed or deleted afterwards. A draft has no number yet: review it in sevdesk, then finalize it there or in Swell. Start with drafts. The layout, the letterhead and the number ranges come from your sevdesk account. A taxed sale to another EU country is booked by the tax rate charged: German rates as German revenue, any other rate under the One-Stop-Shop. Choose Always under the One-Stop-Shop if you are registered for it.",
+  "fields": [
+    {
+      "id": "mode",
+      "label": "Create documents as",
+      "type": "select",
+      "description": "A finalized document gets its number, its payment is booked and its PDF is stored at once. It cannot be changed or deleted afterwards, only corrected. A draft has no number yet: review it in sevdesk, where it can still be edited or deleted, and finalize it there or in Swell. Start with drafts.",
+      "options": [
+        {
+          "value": "draft",
+          "label": "Drafts, to review and finalize"
+        },
+        {
+          "value": "final",
+          "label": "Finalized documents"
+        }
+      ],
+      "default": "draft",
+      "admin_span": 2
+    },
+    {
+      "id": "language",
+      "label": "Document language",
+      "type": "select",
+      "options": [
+        {
+          "value": "de",
+          "label": "German"
+        },
+        {
+          "value": "en",
+          "label": "English"
+        },
+        {
+          "value": "auto",
+          "label": "German for DE, AT, CH and LI, English elsewhere"
+        }
+      ],
+      "default": "de",
+      "admin_span": 2
+    },
+    {
+      "id": "oss",
+      "label": "Sales to other EU countries",
+      "type": "select",
+      "description": "Which sevdesk tax rule a taxed sale to another EU country gets. By the rate charged: German rates are booked as taxable revenue in Germany, any other rate under the One-Stop-Shop rules. Choose One-Stop-Shop if you are registered for it, so that a destination country whose rate equals a German one is booked correctly too.",
+      "options": [
+        {
+          "value": "auto",
+          "label": "By the tax rate charged"
+        },
+        {
+          "value": "always",
+          "label": "Always under the One-Stop-Shop"
+        }
+      ],
+      "default": "auto",
+      "admin_span": 2
+    },
+    {
+      "id": "credit_notes",
+      "label": "Create credit notes for refunds",
+      "type": "toggle",
+      "description": "Each refund of an order that has a sevdesk invoice becomes a credit note for that invoice.",
+      "default": true
+    },
+    {
+      "id": "send_email",
+      "label": "E-mail finalized documents to customers, with a link to the PDF",
+      "type": "toggle",
+      "description": "Sends each finalized invoice and credit note to the customer, with a link to the PDF. The e-mail can be edited under Settings → Notifications. Drafts are not sent.",
+      "default": false
+    }
+  ]
+}

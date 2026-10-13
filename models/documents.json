@@ -1,0 +1,266 @@
+{
+  "label": "sevdesk documents",
+  "description": "One record per invoice and per credit note the app creates in sevdesk, or tried to create. The app uses it to never create a document twice, and to continue one where an attempt stopped.",
+  "name_field": "name",
+  "searches": [
+    {
+      "id": "default",
+      "fields": [
+        "name",
+        "number",
+        "order_number",
+        "customer_name",
+        "customer_email",
+        "invoice_number"
+      ]
+    }
+  ],
+  "fields": {
+    "key": {
+      "type": "string",
+      "label": "Key",
+      "description": "The order or the refund the document belongs to. Unique, so each gets one document.",
+      "required": true,
+      "unique": true,
+      "immutable": true
+    },
+    "type": {
+      "type": "string",
+      "label": "Type",
+      "enum": [
+        "invoice",
+        "credit_note"
+      ],
+      "required": true
+    },
+    "status": {
+      "type": "string",
+      "label": "Status",
+      "enum": [
+        "pending",
+        "created",
+        "failed",
+        "skipped",
+        "resolved"
+      ],
+      "default": "pending"
+    },
+    "source": {
+      "type": "string",
+      "label": "Started by",
+      "description": "The store event or dashboard action that asked for the document."
+    },
+    "name": {
+      "type": "string",
+      "label": "Name",
+      "description": "The document number once sevdesk has assigned one, the order until then."
+    },
+    "number": {
+      "type": "string",
+      "label": "Number",
+      "description": "The document number sevdesk assigned when the document was finalized."
+    },
+    "invoice_number": {
+      "type": "string",
+      "label": "For invoice",
+      "description": "On a credit note: the invoice it refunds."
+    },
+    "order_id": {
+      "type": "objectid",
+      "label": "Order ID"
+    },
+    "order": {
+      "type": "link",
+      "label": "Order",
+      "model": "orders",
+      "key": "order_id"
+    },
+    "order_number": {
+      "type": "string",
+      "label": "Order"
+    },
+    "account_id": {
+      "type": "objectid",
+      "label": "Customer ID"
+    },
+    "account": {
+      "type": "link",
+      "label": "Customer",
+      "model": "accounts",
+      "key": "account_id"
+    },
+    "payment_id": {
+      "type": "objectid",
+      "label": "Payment ID"
+    },
+    "refund_id": {
+      "type": "objectid",
+      "label": "Refund ID"
+    },
+    "reference": {
+      "type": "string",
+      "label": "Refund reference",
+      "description": "Printed on a credit note to tell the refunds of one order apart."
+    },
+    "customer_name": {
+      "type": "string",
+      "label": "Customer"
+    },
+    "customer_email": {
+      "type": "string",
+      "label": "Customer e-mail"
+    },
+    "language": {
+      "type": "string",
+      "label": "Language",
+      "enum": [
+        "de",
+        "en"
+      ]
+    },
+    "amount": {
+      "type": "float",
+      "label": "Total (EUR)",
+      "scale": 2
+    },
+    "currency": {
+      "type": "string",
+      "label": "Currency",
+      "default": "EUR"
+    },
+    "tax_rule": {
+      "type": "string",
+      "label": "sevdesk tax rule"
+    },
+    "sevdesk_id": {
+      "type": "string",
+      "label": "sevdesk ID"
+    },
+    "sevdesk_status": {
+      "type": "string",
+      "label": "Status in sevdesk",
+      "enum": [
+        "draft",
+        "open",
+        "partly_paid",
+        "paid"
+      ],
+      "description": "As it was when the app last read it."
+    },
+    "sevdesk_url": {
+      "type": "string",
+      "label": "sevdesk link"
+    },
+    "contact_id": {
+      "type": "string",
+      "label": "sevdesk contact ID"
+    },
+    "contact_key": {
+      "type": "string",
+      "label": "Contact key",
+      "description": "Orders with the same key share one sevdesk contact."
+    },
+    "language_set": {
+      "type": "bool",
+      "label": "PDF language set",
+      "default": false
+    },
+    "payment_method": {
+      "type": "string",
+      "label": "Refunded by",
+      "description": "On a credit note: the payment method of the refund, which decides the sevdesk account the payout is booked on."
+    },
+    "rates": {
+      "type": "array",
+      "label": "Amounts per tax rate",
+      "description": "On a credit note: what it holds at each tax rate, including tax. sevdesk limits the credit notes of an invoice per tax rate.",
+      "value_type": "object",
+      "fields": {
+        "rate": {
+          "type": "float",
+          "label": "Tax rate (%)"
+        },
+        "gross": {
+          "type": "float",
+          "label": "Amount (EUR)",
+          "scale": 2
+        }
+      }
+    },
+    "booked_amount": {
+      "type": "float",
+      "label": "Paid in sevdesk (EUR)",
+      "scale": 2
+    },
+    "booking_note": {
+      "type": "string",
+      "label": "Payment booking"
+    },
+    "date_booked": {
+      "type": "date",
+      "label": "Payments handled",
+      "description": "Set once the app has dealt with the payments, whether or not anything was booked."
+    },
+    "pdf": {
+      "type": "file",
+      "label": "PDF"
+    },
+    "problem": {
+      "type": "string",
+      "label": "Problem"
+    },
+    "problem_code": {
+      "type": "string",
+      "label": "Problem code"
+    },
+    "attempts": {
+      "type": "int",
+      "label": "Attempts",
+      "default": 0
+    },
+    "date_attempted": {
+      "type": "date",
+      "label": "Last attempt"
+    },
+    "date_submitted": {
+      "type": "date",
+      "label": "Submitted",
+      "description": "Set while a create request to sevdesk has no answer yet."
+    },
+    "date_pending": {
+      "type": "date",
+      "label": "Waiting since",
+      "description": "Set while the document waits for sevdesk. After a day of waiting it is listed under Needs attention."
+    },
+    "date_issued": {
+      "type": "date",
+      "label": "Document date"
+    },
+    "locked_until": {
+      "type": "date",
+      "label": "Locked until"
+    },
+    "notify_customer": {
+      "type": "bool",
+      "label": "E-mailed to customer",
+      "description": "Set by the app when the PDF is ready and e-mails are switched on. Setting it sends the e-mail.",
+      "default": false
+    }
+  },
+  "events": {
+    "types": [
+      {
+        "id": "ready",
+        "description": "The PDF is stored and the customer is to be e-mailed",
+        "conditions": {
+          "notify_customer": true,
+          "$record": {
+            "notify_customer": {
+              "$ne": true
+            }
+          }
+        }
+      }
+    ]
+  }
+}
