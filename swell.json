@@ -5,6 +5,7 @@
 	"version": "1.0.0",
 	"description": "Invoices, credit notes and payment bookings in sevdesk for your orders",
 	"support_email": "support@swell.is",
+	"documentation_url": "https://developers.swell.is/app-guides/sevdesk",
 	"repository_url": "https://github.com/swellstores/sevdesk-app",
 	"price_external": true,
 	"images": [
