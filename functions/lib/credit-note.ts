@@ -69,7 +69,12 @@ export function buildCreditNote(input: CreditNoteInput): BuiltCreditNote {
 
   const held = sumByRate(input.positions);
   if (held.size === 0) {
-    held.set(0, invoiceCents);
+    // Without them the tax rates are unknown, and a guess would book the refund at the wrong VAT
+    throw new Problem(
+      "failed",
+      "invoice_no_positions",
+      `sevdesk shows no positions for invoice ${invoiceNumber}, so the credit note cannot be split by tax rate. Create this credit note in sevdesk by hand, then mark it as resolved.`,
+    );
   }
   let positions: Position[];
   let showNet = invoice.showNet;

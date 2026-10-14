@@ -1,6 +1,6 @@
 # sevdesk for Swell
 
-Creates invoices and credit notes in [sevdesk](https://sevdesk.de/) for a Swell store's orders, and books their payments. An order that becomes paid gets an invoice, which arrives in sevdesk as paid. A refund gets a credit note for that invoice, which arrives as paid out. Each document is shown on its order in Swell, with its number, a link into sevdesk and the PDF.
+Creates invoices and credit notes in [sevdesk](https://sevdesk.de/) for a Swell store's orders, and books their payments. An order that becomes paid gets an invoice, which arrives in sevdesk as paid. A refund gets a credit note for that invoice, which arrives as paid out. Each document is listed on its order in Swell, and its page shows the number, the status in sevdesk, the PDF and a link into sevdesk.
 
 Data flows one way, from Swell to sevdesk, with the merchant's own API token. The app reads orders, payments and customers. It writes only its own records in Swell, and only new documents, bookings and contacts in sevdesk.
 
@@ -93,7 +93,7 @@ Every document starts in sevdesk as a **draft**: it has no number, and can be ed
 - A document that needs attention has **Retry** and **Mark as resolved**. Resolve it after creating the document in sevdesk by hand, or when none is needed: the app will then not create it. A document that exists in sevdesk and could not be finished stays there as it is.
 - **Retry failed documents**, in the Actions menu of the app's settings page, retries everything under Needs attention.
 
-The buttons start a run in the background. The dashboard shows that it started and reloads the page when it has finished, usually after ten to twenty seconds. What came of it is on the document.
+The buttons start a run in the background. The dashboard shows that it started and reloads the page when it has finished, usually after ten to twenty seconds. "Finished" means the run has ended, also when the document could not be created: what came of it is on the document.
 
 Through the API, an order's documents expand as `$app.sevdesk.documents`.
 

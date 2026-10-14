@@ -47,6 +47,10 @@ describe("buildCreditNote", () => {
     expect(built.draft.positions).toMatchObject([{ taxRate: 19, price: 21.99 }]);
   });
 
+  it("refuses to guess the tax rates of an invoice without positions", () => {
+    expect(() => buildCreditNote({ ...input, positions: [] })).toThrow(expect.objectContaining({ code: "invoice_no_positions" }) as Problem);
+  });
+
   it("never dates the delivery before the invoice's", () => {
     expect(buildCreditNote(input).draft.deliveryDate).toBe(Math.floor(new Date("2026-10-10T00:00:00+02:00").getTime() / 1000));
   });

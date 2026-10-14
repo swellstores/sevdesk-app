@@ -328,6 +328,13 @@ describe("payments", () => {
     expect(store.documents[0].pdf).toBeTruthy();
   });
 
+  it("names the method left without an account when only exceptions are set", async () => {
+    setup({ ...FINAL, payments: { exceptions: [{ method: "paypal", account: "PayPal" }] } }, [paid(order, "card", 76.61)]);
+    await invoiceOrder(context(), order.id, "order.paid");
+    expect(sevdesk.bookings).toHaveLength(0);
+    expect(store.documents[0].booking_note).toMatch(/paid by card, which has no sevdesk account/);
+  });
+
   it("keeps the finalized invoice and asks for the account when its name is wrong", async () => {
     setup({ ...FINAL, payments: { account: "Shop" } });
     const outcome = await invoiceOrder(context(), order.id, "order.paid");
@@ -387,6 +394,13 @@ describe("a credit note", () => {
       type: "credit_note", status: "created", number: "GU-1000", invoice_number: "RE-1000", amount: 10, reference: "100023", sevdesk_status: "paid",
     });
     expect(store.documents[1].pdf).toBeTruthy();
+  });
+
+  it("waits for sevdesk when the invoice's positions cannot be read", async () => {
+    sevdesk.state.intercept = (call) => (call.path.endsWith("/getPositions") ? sevdesk.refused(503, "Service Unavailable") : undefined);
+    expect((await refund(orders.mixedRates, 108.94))?.result).toBe("retry");
+    expect(store.documents[1]).toMatchObject({ status: "pending", problem_code: "temporary" });
+    expect(sevdesk.creditNotes()).toHaveLength(0);
   });
 
   it("prints the credit note in the invoice's language, in the words its own layout uses", async () => {

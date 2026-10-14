@@ -396,7 +396,7 @@ async function createCreditNote(ctx: Context, doc: DocumentRecord): Promise<SevD
       }
       throw err;
     }),
-    getInvoicePositions(api(ctx), invoiceDoc.sevdesk_id).catch(() => []),
+    getInvoicePositions(api(ctx), invoiceDoc.sevdesk_id),
     ctx.swell.get("/documents", {
       where: { order_id: orderId, type: "credit_note", sevdesk_id: { $ne: null }, id: { $ne: doc.id } },
       limit: 100,
@@ -478,7 +478,12 @@ async function bookInvoice(ctx: Context, doc: DocumentRecord, remote: SevDocumen
   return {
     booked_amount: paid / 100,
     date_booked: now(ctx).toISOString(),
-    booking_note: describeBooking(plan, paid, total, Boolean((ctx.settings.payments?.account || "").trim())),
+    booking_note: describeBooking(
+      plan,
+      paid,
+      total,
+      [ctx.settings.payments?.account, ...(ctx.settings.payments?.exceptions || []).map((row) => row?.account)].some((name) => (name || "").trim()),
+    ),
     sevdesk_status: statusName(Math.max(status, paid >= total ? STATUS.paid : paid > 0 ? STATUS.partlyPaid : STATUS.open)),
   };
 }

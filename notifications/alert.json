@@ -9,7 +9,7 @@
   "subject": "Action needed: {% if key == 'connection' %}sevdesk is not accepting documents from {{ store.name }}{% else %}a sevdesk document for {{ store.name }} could not be created{% endif %}",
   "sample": {
     "key": "documents",
-    "message": "sevdesk refused the document: The given tax rate (16) is not allowed. Allowed values are: 0.0, 7.0, 19.0.",
+    "message": "sevdesk does not accept the order's tax rates under its tax rule \"Taxable revenue\". Check the store's tax rules for the customer's country. (sevdesk: The given tax rate (16) is not allowed. Allowed values are: 0.0, 7.0, 19.0.)",
     "subject": "Invoice for order 1042",
     "count": 1,
     "date_last_seen": "2026-10-10T12:00:00.000Z",
