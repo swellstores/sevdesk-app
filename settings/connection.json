@@ -1,11 +1,12 @@
 {
   "label": "Connection",
-  "description": "Connect your sevdesk account. In sevdesk, open Einstellungen → Benutzer, choose your user, and copy the API token. Paste it here and save.",
+  "description": "Connect your sevdesk account. In sevdesk, open Einstellungen → Benutzer, choose your user, and copy the API token. Paste it here, save, and choose Test connection.",
   "fields": [
     {
       "id": "api_token",
       "label": "API token",
       "type": "secret",
+      "required": true,
       "admin_span": 2
     },
     {
