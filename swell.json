@@ -7,7 +7,6 @@
 	"support_email": "support@swell.is",
 	"documentation_url": "https://developers.swell.is/app-guides/sevdesk",
 	"repository_url": "https://github.com/swellstores/sevdesk-app",
-	"price_external": true,
 	"images": [
 		{
 			"id": "invoices",
