@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import bookPayment from "../../functions/book-payment";
 import creditRefund from "../../functions/credit-refund";
 import invoiceOrder from "../../functions/invoice-order";
+import invoiceUnpaidOrder from "../../functions/invoice-unpaid-order";
 import ProcessDocuments from "../../functions/process-documents";
 import resolveDocument from "../../functions/resolve-document";
 import sweep from "../../functions/sweep";
@@ -127,6 +129,87 @@ describe("order.paid", () => {
     await invoiceOrder(request({ ...order }));
     expect(store.documents).toHaveLength(1);
     expect(store.runs).toHaveLength(1);
+  });
+});
+
+describe("orders on payment terms", () => {
+  const TERMS = { ...SETTINGS, documents: { ...SETTINGS.documents, unpaid_methods: ["net_terms"] } };
+  const plain = { ...orders.mixedRates, id: "d".repeat(24), billing: { ...orders.mixedRates.billing, method: "net_terms" } };
+  const terms = {
+    ...plain,
+    id: "e".repeat(24),
+    $app: { wholesale_desk: { terms: true, net_days: 30, date_due: "2026-12-25T10:00:00.000Z", po_number: " PO-4711 " } },
+  };
+
+  function payment(id: string, orderId: string, amount: number) {
+    return { id, order_id: orderId, method: "net_terms", amount, success: true, date_created: new Date().toISOString() };
+  }
+
+  beforeEach(() => {
+    store = createStore({ settings: TERMS, orders: [...Object.values(orders), plain, terms] });
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-25T10:00:00.000Z"));
+  });
+
+  it("does nothing while no payment method is chosen, and nothing for paid orders or other methods", async () => {
+    store.setSettings(SETTINGS);
+    expect(await invoiceUnpaidOrder(request({ ...terms }))).toMatchObject({ skipped: expect.any(String) });
+
+    store.setSettings(TERMS);
+    expect(await invoiceUnpaidOrder(request({ ...terms, paid: true }))).toMatchObject({ skipped: expect.any(String) });
+    expect(await invoiceUnpaidOrder(request({ ...orders.mixedRates }))).toMatchObject({ skipped: expect.any(String) });
+    expect(store.documents).toHaveLength(0);
+
+    // A payment of an order invoiced the usual way starts nothing new
+    await invoiceOrder(request({ ...order }));
+    store.runs.length = 0;
+    expect(await bookPayment(request({ id: "pay-1", order_id: ORDER_ID, success: true }))).toMatchObject({ skipped: expect.any(String) });
+    expect(store.runs).toHaveLength(0);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("invoices a matching unpaid order when it is placed, with Wholesale Desk's due date and PO number", async () => {
+    const result = await invoiceUnpaidOrder(request({ ...terms }));
+    expect(result).toMatchObject({ started: expect.any(String) });
+    expect(store.documents).toMatchObject([{ key: `invoice:${terms.id}`, source: "order.submitted", status: "pending" }]);
+
+    expect(await runStarted()).toMatchObject([{ result: "created", number: "RE-1000" }]);
+    expect(sevdesk.invoices()).toMatchObject([{ status: "200", customerInternalNote: "100302 / PO PO-4711", timeToPay: 30 }]);
+    expect(store.documents[0]).toMatchObject({ status: "created", sevdesk_status: "open", booked_amount: 0 });
+  });
+
+  it("keeps the account's payment term and the plain reference without Wholesale Desk's fields", async () => {
+    await invoiceUnpaidOrder(request({ ...plain }));
+    await runStarted();
+    expect(sevdesk.invoices()).toMatchObject([{ customerInternalNote: "100302", timeToPay: 14 }]);
+  });
+
+  it("never sets a due date before the invoice date", async () => {
+    const late = { ...terms, $app: { wholesale_desk: { date_due: "2026-11-20T10:00:00.000Z" } } };
+    store = createStore({ settings: TERMS, orders: [late] });
+    await invoiceUnpaidOrder(request({ ...late }));
+    await runStarted();
+    expect(sevdesk.invoices()[0].timeToPay).toBeUndefined();
+  });
+
+  it("books a partial payment when it arrives, and the rest on order.paid without a second invoice", async () => {
+    await invoiceUnpaidOrder(request({ ...terms }));
+    await runStarted();
+
+    store.payments.push(payment("pay-1", terms.id, 50));
+    await bookPayment(request(store.payments[0]));
+    expect(await runStarted()).toMatchObject([{ result: "created" }]);
+    expect(store.documents[0]).toMatchObject({ sevdesk_status: "partly_paid", booked_amount: 50 });
+
+    // The last payment raises both events
+    store.payments.push(payment("pay-2", terms.id, 58.94));
+    await bookPayment(request(store.payments[1]));
+    await invoiceOrder(request({ ...terms, paid: true }));
+    await runStarted();
+    expect(store.documents).toHaveLength(1);
+    expect(store.documents[0]).toMatchObject({ sevdesk_status: "paid", booked_amount: 108.94 });
+    expect(sevdesk.invoices()).toHaveLength(1);
+    expect(sevdesk.bookings.map((booking) => booking.amount)).toEqual([50, 58.94]);
   });
 });
 

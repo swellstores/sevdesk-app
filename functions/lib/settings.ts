@@ -16,6 +16,8 @@ export interface Settings {
     oss?: "auto" | "always" | null;
     credit_notes?: boolean | null;
     send_email?: boolean | null;
+    /** Manual payment methods whose orders are invoiced when placed, before they are paid */
+    unpaid_methods?: string[] | null;
   };
   payments?: {
     /** Name of the sevdesk payment account that shop payments are booked on. Empty: nothing is booked */
@@ -40,6 +42,12 @@ export function finalizes(settings: Settings): boolean {
 
 export function creditNotesEnabled(settings: Settings): boolean {
   return settings.documents?.credit_notes !== false;
+}
+
+/** True when an unpaid order with this payment method is invoiced when it is placed */
+export function invoicesUnpaid(settings: Settings, method: string | undefined | null): boolean {
+  const key = (method || "").trim().toLowerCase();
+  return key !== "" && (settings.documents?.unpaid_methods || []).some((entry) => (entry || "").trim().toLowerCase() === key);
 }
 
 export function apiToken(settings: Settings): string {

@@ -46,6 +46,14 @@ describe("buildInvoice", () => {
     expect(built).toMatchObject({ reference: "100302", countryId: 1, address: "Erika Musterfrau\nHauptstr. 5\n2. OG\n80331 München" });
   });
 
+  it("reads Wholesale Desk's PO number and due date when the order has them", () => {
+    const po = "P".repeat(80);
+    const built = buildInvoice({ ...orders.mixedRates, $app: { wholesale_desk: { po_number: po, date_due: "2026-12-25T10:00:00.000Z" } } }, regular);
+    expect(built).toMatchObject({ reference: `100302 / PO ${po.slice(0, 60)}`, dateDue: "2026-12-25T10:00:00.000Z" });
+    expect(buildInvoice({ ...orders.mixedRates, $app: { wholesale_desk: { date_due: "soon" } } }, regular).dateDue).toBeUndefined();
+    expect(buildInvoice(orders.mixedRates, regular).dateDue).toBeUndefined();
+  });
+
   it("sends gross amounts when sevdesk's rounding per position would be a cent off", async () => {
     const built = buildInvoice(orders.singleRate, regular);
     expect(built.layout.showNet).toBe(false);

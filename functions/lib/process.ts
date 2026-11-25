@@ -22,7 +22,7 @@
 
 import { raiseAlert, settleAlerts } from "./alerts";
 import { buildCreditNote } from "./credit-note";
-import { unixTime } from "./dates";
+import { daysBetween, unixTime } from "./dates";
 import { claim, creditNoteKey, describe, findByKey, invoiceKey, provisionalName, save, take } from "./documents";
 import type { DocumentRecord, SevdeskStatus } from "./documents";
 import { Problem, buildInvoice, checkOrder } from "./invoice";
@@ -303,9 +303,10 @@ function toDraft(built: BuiltInvoice, layout: Layout, contactId: string, profile
     showNet: layout.showNet,
     reference: built.reference,
     positions: layout.positions,
-    // The account's own payment term, as on an invoice written in sevdesk. Left out, an
-    // invoice that is still open is listed there as overdue the day after
-    timeToPay: profile.timeToPay,
+    // The order's own due date, never before the invoice date. Otherwise the account's own
+    // payment term, as on an invoice written in sevdesk. Left out, an invoice that is still
+    // open is listed there as overdue the day after
+    timeToPay: built.dateDue ? Math.max(0, daysBetween(date, built.dateDue)) : profile.timeToPay,
   };
 }
 
