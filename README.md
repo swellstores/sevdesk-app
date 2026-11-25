@@ -16,6 +16,7 @@ Data flows one way, from Swell to sevdesk, with the merchant's own API token. Th
    - **Sales to other EU countries**: by the tax rate charged, or always under the One-Stop-Shop. See "Tax".
    - **Create credit notes for refunds**: on for new installs. Switched off, refunds create nothing.
    - **E-mail finalized documents to customers, with a link to the PDF**: off for new installs.
+   - **Also invoice unpaid orders paid with these payment methods**: empty for new installs. See "Payment terms".
 6. Turn on **Create documents automatically for paid orders and refunds**. Until then nothing is created by itself; the buttons work either way.
 
 Settings are separate for the store's test and live environments, and both start empty. The app needs an account on sevdesk's current bookkeeping system ("sevdesk-Update 2.0", which every account opened since mid-2024 has); Test connection says so if yours is not.
@@ -25,11 +26,12 @@ Settings are separate for the store's test and live environments, and both start
 | In Swell | In sevdesk |
 | --- | --- |
 | An order becomes paid | An invoice, and a booking for each of its payments |
+| An unpaid order is placed with a payment method listed under **Also invoice unpaid orders paid with these payment methods** | An open invoice. Each payment is booked on it when it arrives |
 | A payment of an invoiced order is refunded, in part or in full | A credit note for the invoice, and the booking of the payout |
 | A customer's first order | A contact. Later orders use it again |
 | **Create sevdesk invoice** on an order, or **Create sevdesk invoices** on selected orders | An invoice, paid or not |
 
-**The invoice.** Addressed to the billing address. The head text names the Swell order, and the order number is in sevdesk's reference field. Then one position per order item, one for shipping, and discounts as a negative position per tax rate, named after the coupon. A paid order's invoice says that it is already paid, and how. Layout, letterhead and number range come from the sevdesk account, and so does the due date: the invoice gets the payment term set for invoices in sevdesk, so one that is still open is listed there as open, not as overdue the next day. An unpaid order's invoice carries no payment instructions of its own: keep your bank details in the footer of the sevdesk layout, or create drafts and add a text in sevdesk before finalizing.
+**The invoice.** Addressed to the billing address. The head text names the Swell order, and the order number is in sevdesk's reference field. Then one position per order item, one for shipping, and discounts as a negative position per tax rate, named after the coupon. A paid order's invoice says that it is already paid, and how. Layout, letterhead and number range come from the sevdesk account, and so does the due date: the invoice gets the payment term set for invoices in sevdesk, so one that is still open is listed there as open, not as overdue the next day. An order that names its own due date gets that one instead (see "Payment terms"). An unpaid order's invoice carries no payment instructions of its own: keep your bank details in the footer of the sevdesk layout, or create drafts and add a text in sevdesk before finalizing.
 
 **The credit note.** A refund in Swell is an amount and names no items. A refund of the whole invoice repeats the invoice's positions. A partial refund becomes one position per tax rate. sevdesk limits the credit notes of an invoice per tax rate, so each refund is split in the proportion of what the invoice still holds at each rate.
 
@@ -46,6 +48,21 @@ sevdesk books a payment directly only on an account without a bank behind it: it
 - **Gift cards and store credit** are not booked unless they have a row with an account. They are no money arriving, and how they are booked depends on how the sale of the gift card was.
 - An invoice whose payments are not all booked stays open or partly paid in sevdesk. Its page in Swell says what was booked and what was not. An order paid partly by gift card, for example, arrives as partly paid: the gift card's part stays open until you book it.
 - With no account entered at all, nothing is booked and every invoice arrives as open.
+
+## Payment terms
+
+Business customers who buy on payment terms pay after the invoice, with a manual payment method such as "net terms" under Settings → Payments in Swell. Such orders stay unpaid for weeks. To have them in sevdesk from the start, enter the method's ID under **Documents → Also invoice unpaid orders paid with these payment methods**.
+
+- An unpaid order with one of these methods gets its invoice when it is placed. It arrives in sevdesk as open.
+- Each payment that is recorded on the order later is booked on the invoice when it arrives, also a partial one, as described under "Payments". The invoice is partly paid until the order is paid in full. A payment is never booked twice, and the order gets no second invoice when it becomes paid.
+- Orders with other methods are invoiced when they are paid, as before. With the setting empty, nothing changes.
+
+The app reads two fields that the Wholesale Desk app writes on terms orders, and works without them:
+
+| Field on the order | On the invoice |
+| --- | --- |
+| `$app.wholesale_desk.date_due` | The due date: its day in German time, never before the invoice date. Without it, the payment term set in sevdesk |
+| `$app.wholesale_desk.po_number` | Beside the order number in sevdesk's reference field (Referenz/Bestellnummer), as "100302 / PO 4711". Up to 60 characters of it |
 
 ## Tax
 
@@ -103,7 +120,7 @@ Once the app is switched on, a paid or refunded order needs nothing from you: it
 
 - **Drafts.** While the app creates drafts, review them in sevdesk and finalize them there or in Swell.
 - **Needs attention.** When the e-mail "Action needed" arrives, open Orders → sevdesk documents → **Needs attention** and read the reason. Correct the cause and choose **Retry**, or choose **Mark as resolved** after creating the document in sevdesk by hand.
-- **Orders the automation does not cover.** For unpaid orders, such as bank transfer, and for orders from before the install, choose **Create sevdesk invoice** on the order, or select orders in the order list. When such an order is paid later, its payment is booked on the invoice. If the app was switched off at that moment, choose the action on the order again: it creates no second invoice and books the payment.
+- **Orders the automation does not cover.** For unpaid orders, such as bank transfer, and for orders from before the install, choose **Create sevdesk invoice** on the order, or select orders in the order list. When such an order is paid later, its payment is booked on the invoice. If the app was switched off at that moment, choose the action on the order again: it creates no second invoice and books the payment. Unpaid orders of a method listed under "Payment terms" need none of this.
 - **Payouts.** Book the payouts of your payment provider from the clearing account to your bank account in sevdesk.
 
 ## When something goes wrong
@@ -149,7 +166,7 @@ E-mails to administrators are sent by the notification "sevdesk needs attention"
 | Settings | `settings/connection.json`, `documents.json`, `payments.json` | Token, switch, document options, payment accounts; **Test connection** and **Retry failed documents** |
 | Models | `models/documents.json`, `alerts.json`, `orders.json` | The ledger of documents; open alerts; a link from the order to its documents |
 | Views | `content/documents.json`, `content/orders.json` | The documents list and page; the order's tab and actions |
-| Event functions | `functions/invoice-order.ts`, `credit-refund.ts` | `order.paid` and `payment.refund.succeeded`, only while the app is switched on. They write the document's record and start a run |
+| Event functions | `functions/invoice-order.ts`, `credit-refund.ts`, `invoice-unpaid-order.ts`, `book-payment.ts` | `order.paid`, `payment.refund.succeeded`, and for the methods under "Payment terms" `order.submitted` and `payment.succeeded`, only while the app is switched on. They write the document's record and start a run |
 | Workflow | `functions/process-documents.ts` | The one place where documents are worked on: for an event, a button, a bulk action, or the sweep |
 | Cron function | `functions/sweep.ts` | Every half hour: starts a run for documents that still wait for sevdesk |
 | Actions | `functions/test-connection.ts`, `resolve-document.ts` | The two buttons that answer at once |

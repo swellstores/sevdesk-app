@@ -21,12 +21,23 @@ export function unixTime(value: Date | string | undefined | null): number {
   return Math.floor(asDate(value).getTime() / 1000);
 }
 
-/** The day as printed on a document: 10.10.2026 in German, 10 Oct 2026 in English */
-export function displayDate(value: Date | string | undefined | null, language: "de" | "en"): string {
+function germanDay(value: Date | string | undefined | null): Record<string, string> {
   const parts: Record<string, string> = {};
   for (const part of BERLIN.formatToParts(asDate(value))) {
     parts[part.type] = part.value;
   }
+  return parts;
+}
+
+/** Whole German days from the day of `from` to the day of `to`: 0 for the same day, negative before it */
+export function daysBetween(from: Date | string, to: Date | string): number {
+  const utc = (parts: Record<string, string>) => Date.UTC(+parts.year, +parts.month - 1, +parts.day);
+  return Math.round((utc(germanDay(to)) - utc(germanDay(from))) / 86400000);
+}
+
+/** The day as printed on a document: 10.10.2026 in German, 10 Oct 2026 in English */
+export function displayDate(value: Date | string | undefined | null, language: "de" | "en"): string {
+  const parts = germanDay(value);
   if (language === "de") {
     return `${parts.day}.${parts.month}.${parts.year}`;
   }

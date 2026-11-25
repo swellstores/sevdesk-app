@@ -73,6 +73,8 @@ export interface BuiltInvoice {
   footText?: string;
   /** Shown in sevdesk as the document's reference */
   reference: string;
+  /** When the order is due (an ISO date), when it says so itself. Otherwise the sevdesk account's payment term applies */
+  dateDue?: string;
   /** Name and address lines, without the country */
   address: string;
   countryId: number;
@@ -484,6 +486,10 @@ export function buildInvoice(order: SwellRecord, options: BuildOptions): BuiltIn
   }
 
   const number = String(order.number || order.id);
+  // Fields that Wholesale Desk writes on orders bought on payment terms, read when present
+  const terms: SwellRecord = order.$app?.wholesale_desk || {};
+  const po = String(terms.po_number ?? "").trim().slice(0, 60);
+  const due = typeof terms.date_due === "string" && !Number.isNaN(Date.parse(terms.date_due)) ? terms.date_due : undefined;
   const destinationId = countryId(destination);
   const asCompany = Boolean(recipient.company || decision.vatNumber);
   const personName = recipient.person ? splitName(recipient.person) : undefined;
@@ -497,7 +503,8 @@ export function buildInvoice(order: SwellRecord, options: BuildOptions): BuiltIn
     header: t.invoice,
     headText: t.order(number, displayDate(order.date_created, language)),
     ...(order.paid ? { footText: t.paid(paymentMethodName(order.billing?.method, language)) } : {}),
-    reference: number,
+    reference: po ? `${number} / PO ${po}` : number,
+    ...(due ? { dateDue: due } : {}),
     address: recipient.address,
     countryId: addressCountryId,
     ...(destinationId && destinationId !== addressCountryId ? { deliveryCountryId: destinationId } : {}),

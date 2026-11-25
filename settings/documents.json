@@ -72,6 +72,14 @@
       "type": "toggle",
       "description": "Sends each finalized invoice and credit note to the customer, with a link to the PDF. The e-mail can be edited under Settings → Notifications. Drafts are not sent.",
       "default": false
+    },
+    {
+      "id": "unpaid_methods",
+      "label": "Also invoice unpaid orders paid with these payment methods",
+      "type": "tags",
+      "description": "The IDs of manual payment methods under Settings → Payments in Swell, for example a method for payment on account (net terms). An order with one of them gets its invoice when it is placed, not when it is paid, and each payment is booked on the invoice when it arrives, also in parts. The due date and the purchase order number come from Wholesale Desk when the order has them. Leave it empty to invoice orders only when they are paid.",
+      "placeholder": "The ID of a manual method, for example: net_terms",
+      "admin_span": 2
     }
   ]
 }
