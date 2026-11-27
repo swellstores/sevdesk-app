@@ -127,13 +127,13 @@ Once the app is switched on, a paid or refunded order needs nothing from you: it
 
 | What happens | What the app does |
 | --- | --- |
-| sevdesk is down or slow | The run tries again for about ten minutes. After that the document is tried again every half hour, for a day. Then it is listed under Needs attention |
+| sevdesk is down or slow | The run tries again for about ten minutes. After that the document is tried again every hour, for a day. Then it is listed under Needs attention |
 | An answer from sevdesk is lost | The next attempt looks before it writes: for its draft among the customer's drafts, by the reference; for the number on the document; for what sevdesk already holds as paid |
 | The same event arrives twice | The second one finds the document's record and continues it, or finds nothing left to do |
 | Two attempts reach the same document at the same moment | One of them takes the record, the other waits and finds the work done |
 | sevdesk refuses the token | Affected documents are listed under Needs attention. The store's administrators get one e-mail. After the token is corrected, **Retry failed documents** creates them |
 | sevdesk refuses a document, or no invoice can be built | Listed under Needs attention with the reason. The administrators get one e-mail while such documents wait, not one per order |
-| An order is paid after its invoice was created, and the booking cannot be made at that moment | The invoice's record is marked as waiting for its booking when the payment arrives. Whatever attempt comes next books it: the run's own repeats, the half-hourly run, or a retry |
+| An order is paid after its invoice was created, and the booking cannot be made at that moment | The invoice's record is marked as waiting for its booking when the payment arrives. Whatever attempt comes next books it: the run's own repeats, the hourly run, or a retry |
 | One document of a bulk run cannot be worked on | It keeps the message, and the run goes on with the next document |
 | The payment account's name is wrong, or it names an account that is connected to a bank | The invoice is finalized and has its PDF; the booking waits under Needs attention. **Retry** books it after the name is corrected |
 | A draft was deleted in sevdesk, or the token now belongs to another account | The next time the app reads the document it is listed under Needs attention. **Retry** creates it again, **Mark as resolved** leaves it |
@@ -168,7 +168,7 @@ E-mails to administrators are sent by the notification "sevdesk needs attention"
 | Views | `content/documents.json`, `content/orders.json` | The documents list and page; the order's tab and actions |
 | Event functions | `functions/invoice-order.ts`, `credit-refund.ts`, `invoice-unpaid-order.ts`, `book-payment.ts` | `order.paid`, `payment.refund.succeeded`, and for the methods under "Payment terms" `order.submitted` and `payment.succeeded`, only while the app is switched on. They write the document's record and start a run |
 | Workflow | `functions/process-documents.ts` | The one place where documents are worked on: for an event, a button, a bulk action, or the sweep |
-| Cron function | `functions/sweep.ts` | Every half hour: starts a run for documents that still wait for sevdesk |
+| Cron function | `functions/sweep.ts` | Every hour: starts a run for documents that still wait for sevdesk |
 | Actions | `functions/test-connection.ts`, `resolve-document.ts` | The two buttons that answer at once |
 | Notifications | `notifications/document-ready.*`, `alert.*` | The customer's e-mail; the administrators' alert |
 | Library | `functions/lib/` | See below |

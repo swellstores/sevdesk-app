@@ -2,8 +2,8 @@ import { stale } from "./lib/documents";
 import { WORKFLOW } from "./lib/start";
 
 export const config: SwellConfig = {
-  description: "Every half hour: start a run for documents that are still waiting for sevdesk",
-  cron: { schedule: "*/30 * * * *" },
+  description: "Every hour: start a run for documents that are still waiting for sevdesk",
+  cron: { schedule: "40 * * * *" },
 };
 
 // A run retries a document for some minutes by itself. Only what has had no attempt for
